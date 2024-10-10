@@ -1,0 +1,1 @@
+{"version":3,"file":"colorRoutes.js","sourceRoot":"","sources":["../../src/routes/colorRoutes.ts"],"names":[],"mappings":";;AAAA,qCAAiC;AACjC,oEAAuF;AAEvF,MAAM,MAAM,GAAG,IAAA,gBAAM,GAAE,CAAC;AAExB,MAAM,CAAC,IAAI,CAAC,SAAS,EAAE,6BAAW,CAAC,CAAC;AACpC,MAAM,CAAC,GAAG,CAAC,SAAS,EAAE,2BAAS,CAAC,CAAC;AACjC,MAAM,CAAC,GAAG,CAAC,aAAa,EAAE,+BAAa,CAAC,CAAC;AAEzC,kBAAe,MAAM,CAAC"}

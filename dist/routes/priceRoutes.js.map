@@ -1,0 +1,1 @@
+{"version":3,"file":"priceRoutes.js","sourceRoot":"","sources":["../../src/routes/priceRoutes.ts"],"names":[],"mappings":";;AAAA,qCAAiC;AACjC,oEAAyF;AAEzF,MAAM,MAAM,GAAG,IAAA,gBAAM,GAAE,CAAC;AAExB,MAAM,CAAC,IAAI,CAAC,SAAS,EAAE,6BAAW,CAAC,CAAC;AACpC,MAAM,CAAC,GAAG,CAAC,aAAa,EAAE,8BAAY,CAAC,CAAC;AACxC,MAAM,CAAC,GAAG,CAAC,SAAS,EAAE,8BAAY,CAAC,CAAC;AAEpC,kBAAe,MAAM,CAAC"}
