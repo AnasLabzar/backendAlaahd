@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createSKU, getAllSKUs } from '../controllers/skuControllers';
+import { createSKU, getAllSKUs, getSkuById } from '../controllers/skuControllers';
 
 const router = Router();
 
@@ -8,5 +8,8 @@ router.post('/skus', createSKU);
 
 // Get all SKUs
 router.get('/skus', getAllSKUs);
+
+router.get('/skus/:id', getSkuById);
+
 
 export default router;
