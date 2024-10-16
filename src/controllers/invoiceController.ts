@@ -22,6 +22,21 @@ export const getAllInvoices = async (_req: Request, res: Response) => {
   }
 };
 
+// Get an order by ID
+export const getInvoiceById = async (req: Request, res: Response) => {
+  try {
+    const invoice = await Invoice.findById(req.params.id);
+    if (!invoice) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+    res.json(invoice);
+  } catch (err) {
+    const errorMessage = (err as Error).message;
+    res.status(500).json({ error: errorMessage });
+  }
+};
+
+
 // Get filtered and counted invoices (week/month/year)
 export const getFilteredInvoices = async (req: Request, res: Response) => {
   const { filter } = req.query;
@@ -53,4 +68,5 @@ export const getFilteredInvoices = async (req: Request, res: Response) => {
     res.status(500).json({ error: (err as Error).message });
   }
 };
+
 
