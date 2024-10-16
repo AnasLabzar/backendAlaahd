@@ -1,10 +1,13 @@
 import express from 'express';
-import { createInvoice, getAllInvoices, getFilteredInvoices } from '../controllers/invoiceController';
+import { createInvoice, getAllInvoices, getFilteredInvoices, getInvoiceById } from '../controllers/invoiceController';
 
 const router = express.Router();
 
 // Create an invoice
 router.post('/invoices', createInvoice);
+
+// Route to get an order by ID
+router.get('/invoices/:id', getInvoiceById);
 
 // Get all invoices
 router.get('/invoices', getAllInvoices);
