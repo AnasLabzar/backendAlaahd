@@ -11,7 +11,8 @@ import colorRoutes from './routes/colorRoutes';
 import sizeRoutes from './routes/sizeRoutes';
 import skuRoutes from './routes/skuRoutes';
 import invoiceRoutes from './routes/invoiceRoutes';
-import authRoutes from './routes/authRoutes';
+import authRoutes from './routes/authentication';
+import userRoutes from './routes/userRoutes';
 // Install cors: npm install cors
 
 
@@ -36,6 +37,7 @@ app.use('/api', sizeRoutes);
 app.use('/api', skuRoutes);
 app.use('/api', invoiceRoutes);
 app.use('/api', authRoutes);
+app.use('/api', userRoutes);
 
 
 // MongoDB connection

@@ -1,114 +1,91 @@
-import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs'; // Use bcryptjs for hashing passwords
-import { User } from '../models/User';
+import express from 'express';
+import { authentication, random } from '../helper';
+import { createUser, getUserByEmail } from '../models/User';
+import { IUser } from '../models/User'; // Make sure to import IUser
 
-// Register a User with Password Hashing
-export const registerUser = async (req: Request, res: Response) => {
-  const { username, email, password, role } = req.body;
+// Login function
+export const loginUser = async (req: express.Request, res: express.Response) => {
+    try {
+        const { email, password } = req.body;
 
-  try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
+
+        // Find user by email
+        const user = await getUserByEmail(email) as IUser; // Type assertion
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        // Ensure salt is defined before using it
+        if (!user.authentication?.salt || !user.authentication?.password) {
+            return res.status(500).json({ message: 'User authentication details are not available.' });
+        }
+
+        // Generate hash with stored salt and compare to stored password
+        const expectedHash = authentication(user.authentication.salt, password);
+
+        if (user.authentication.password !== expectedHash) {
+            return res.status(403).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate session token and update the user’s authentication
+        const salt = random();
+        user.authentication.sessionToken = authentication(salt, user._id.toString());
+
+        await user.save();
+
+        // Set cookie for authentication token
+        res.cookie('ANAS-AUTH', user.authentication.sessionToken, {
+            domain: 'localhost',
+            path: '/',
+        });
+
+        return res.status(200).json({ message: 'Login successful', user }).end();
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Server error', error: (error as Error).message });
     }
+}
 
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+// Register function
+export const registerUser = async (req: express.Request, res: express.Response) => {
+    try {
+        const { email, password, username, nationality, role = 'customer', phone } = req.body;
 
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword, // Store hashed password
-      role: role || 'customer'  // Default role is customer
-    });
+        if (!email || !password || !username || !phone) {
+            return res.status(400).json({ message: 'All required fields must be provided' });
+        }
 
-    const savedUser = await newUser.save();
-    res.status(201).json({ message: 'User registered successfully', user: savedUser });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err });
-  }
-};
+        // Check if the user already exists
+        const existingUser = await getUserByEmail(email);
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
 
-// Log in a User with Password Comparison
-export const loginUser = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+        // Generate salt and hash the password
+        const salt = random();
+        const hashedPassword = authentication(salt, password);
 
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+        // Create a new user
+        const user = await createUser({
+            username,
+            email,
+            role,
+            phone,
+            nationality,
+            authentication: {
+                salt,
+                password: hashedPassword,
+            },
+        } as IUser); // Type assertion
+
+        return res.status(201).json({ message: 'User registered successfully', user }).end();
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Server error', error: (error as Error).message });
     }
-
-    // Compare the entered password with the hashed password in the database
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    res.status(200).json({ message: 'Login successful', user });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err });
-  }
-};
-
-// Get user by ID
-// export const getUserById = async (req: Request, res: Response) => {
-//   const userId = req.params._id;
-
-//   try {
-//     // Find the user by ID in the database
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-
-//     // Respond with the user data
-//     res.status(200).json(user);
-//   } catch (err) {
-//     res.status(500).json({ message: 'Server error', error: err });
-
-//     // For other types of errors
-//     res.status(500).json({ message: 'Server error', err });
-//   }
-// };
-
-
-// Get a product by ID
-export const getUserById = async (req: Request, res: Response) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
-  }
-};
-
-
-export const getUserByCustom = async (req: Request, res: Response) => {
-  try {
-    const customers = await User.find({ role: 'custom' }); // Ensure role is 'custom'
-    if (!customers || customers.length === 0) {
-      return res.status(404).json({ message: 'No users with the role custom found' });
-    }
-    res.json(customers);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error', error: (err as Error).message });
-  }
-};
-
-
-// Get all products
-export const getAllUser = async (_req: Request, res: Response) => {
-  try {
-    const user = await User.find();
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
-  }
-};
+}
