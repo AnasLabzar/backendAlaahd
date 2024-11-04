@@ -29,7 +29,7 @@ const UserSchema: Schema<IUser> = new Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'moderator', 'customer', 'supplier'],
+    enum: ['admin', 'moder', 'custom', 'fourn'],
     default: 'customer',  // Default role
   },
   score: { type: String },
@@ -55,4 +55,4 @@ export const createUser = async (userData: IUser) => {
 export const deleteUserById = (id: string) => UserModel.findOneAndDelete({ _id: id });
 export const updateUserById = (id: string, values: Partial<IUser>) =>
   UserModel.findByIdAndUpdate(id, values, { new: true });
-export const getCustomers = () => UserModel.find({ role: 'customer' });
+export const getCustomers = () => UserModel.find({ role: 'custom' });
