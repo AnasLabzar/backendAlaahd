@@ -2,15 +2,15 @@ import { Request, Response } from 'express';
 import { UserModel } from '../models/User';
 import { IUser } from '../models/User';
 
-// Function to get all users
-export const getAllUsers = async (req: Request, res: Response) => {
-    try {
-        const users = await UserModel.find();
-        res.status(200).json(users);
-    } catch (error) {
-        console.error(error);
-        res.sendStatus(400);
-    }
+
+// Get all SKUs
+export const getAllUsers = async (_req: Request, res: Response) => {
+  try {
+    const users = await UserModel.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
 };
 
 // Function to get all customers
