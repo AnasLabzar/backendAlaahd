@@ -1,9 +1,9 @@
-import express from 'express';
+import { Request, Response } from 'express';
 import { UserModel } from '../models/User';
 import { IUser } from '../models/User';
 
 // Function to get all users
-export const getAllUsers = async (req: express.Request, res: express.Response) => {
+export const getAllUsers = async (req: Request, res: Response) => {
     try {
         const users = await UserModel.find();
         res.status(200).json(users);
@@ -14,7 +14,7 @@ export const getAllUsers = async (req: express.Request, res: express.Response) =
 };
 
 // Function to get all customers
-export const getCustomerUsers = async (req: express.Request, res: express.Response) => {
+export const getCustomerUsers = async (req: Request, res: Response) => {
     try {
         const customers = await UserModel.find({ role: 'custom' });
         res.status(200).json(customers);
@@ -25,7 +25,7 @@ export const getCustomerUsers = async (req: express.Request, res: express.Respon
 };
 
 // Function to get user by ID
-export const getUserById = async (req: express.Request, res: express.Response) => {
+export const getUserById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const user = await UserModel.findById(id);
@@ -49,7 +49,7 @@ export const getUserBySessionToken = async (sessionToken: string) => {
 };
 
 // Function to delete user by ID
-export const deleteUserById = async (req: express.Request, res: express.Response) => {
+export const deleteUserById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const deletedUser = await UserModel.findByIdAndDelete(id);
@@ -64,7 +64,7 @@ export const deleteUserById = async (req: express.Request, res: express.Response
 };
 
 // Function to update user
-export const updateUserById = async (req: express.Request, res: express.Response) => {
+export const updateUserById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { username } = req.body;
