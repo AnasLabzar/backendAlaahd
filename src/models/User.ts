@@ -1,14 +1,12 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
 // Define the interface for TypeScript with the new structure
 export interface IUser extends Document {
-  _id: Types.ObjectId;
   username: string;
   email: string;
   authentication: {
     password: string;
     salt?: string;
-    sessionToken?: string;
   };
   role: string;
   score?: string;
@@ -24,7 +22,6 @@ const UserSchema: Schema<IUser> = new Schema({
   authentication: {
     password: { type: String, required: true, select: false },
     salt: { type: String, select: false },
-    sessionToken: { type: String, select: false },
   },
   role: {
     type: String,
