@@ -1,13 +1,13 @@
 import express from 'express';
 import authentication from './authentication';
-import users from './users';
-import product from './product';
-import category from './category';
-import colors from './colors';
-import sku from './sku';
-import prices from './prices';
-import orders from './orders';
-import invoice from './invoice';
+import users from './userRoutes';
+import product from './productRoutes';
+import category from './categoryRoutes';
+import colors from './colorRoutes';
+import sku from './skuRoutes';
+import prices from './priceRoutes';
+import orders from './orderRoutes';
+import invoice from './invoiceRoutes';
 
 const router = express.Router();
 
