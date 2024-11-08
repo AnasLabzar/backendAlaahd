@@ -1,82 +1,79 @@
-import { Request, Response } from 'express';
-import { UserModel } from '../models/User';
+import express from 'express';
+import {
+    deleteUserById,
+    getUserByEmail,
+    getUserBySessionToken,
+    getUsers,
+    getUserById, // Fix typo in function name here
+} from '../models/User';
 
-
-// Get all SKUs
-export const getAllUsers = async (_req: Request, res: Response) => {
-  try {
-    const users = await UserModel.find();
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
-  }
-};
-
-// Function to get all customers
-export const getCustomerUsers = async (req: Request, res: Response) => {
+export const getAllUsers = async (req: express.Request, res: express.Response) => {
     try {
-        const customers = await UserModel.find({ role: 'custom' });
-        res.status(200).json(customers);
+        const users = await getUsers();
+        return res.status(200).json(users);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error', error: (error as Error).message });
+        console.log(error);
+        res.sendStatus(400)
     }
-};
+}
 
 // Function to get user by ID
-export const getUserById = async (req: Request, res: Response) => {
+export const getUsersById = async (req: express.Request, res: express.Response) => {
     try {
-        const { id } = req.params;
-        const user = await UserModel.findById(id);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        res.status(200).json(user);
+        const { id } = req.params; // Extract id from request parameters
+        const user = await getUserById(id);
+        console.log(user);
+        return res.status(200).json(user);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
+        console.log(error);
+        return res.status(404).json({ error: 'User not found' });
     }
-};
+}
 
 // Function to get user by session token
-export const getUserBySessionToken = async (sessionToken: string) => {
-    const user = await UserModel.findOne({ 'authentication.sessionToken': sessionToken });
-    if (!user) {
+export const getUsersBySessionToken = async (sessionToken: string) => {
+    try {
+        const user = await getUserBySessionToken(sessionToken); // Corrected the function call here
+        return user;
+    } catch (error) {
         throw new Error('User not found');
     }
-    return user;
-};
+}
 
-// Function to delete user by ID
-export const deleteUserById = async (req: Request, res: Response) => {
+
+
+export const deleteUser = async (req: express.Request, res: express.Response) => {
     try {
         const { id } = req.params;
-        const deletedUser = await UserModel.findByIdAndDelete(id);
-        if (!deletedUser) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        res.status(200).json(deletedUser);
+        const deletedUser = await deleteUserById(id);
+        return res.json(deletedUser);
     } catch (error) {
-        console.error(error);
-        res.sendStatus(400);
+        console.log(error);
+        res.sendStatus(400)
     }
-};
+}
 
-// Function to update user
-export const updateUserById = async (req: Request, res: Response) => {
+export const updateUser = async (req: express.Request, res: express.Response) => {
     try {
-        const { id } = req.params;
+        const { id } =  req.params;
         const { username } = req.body;
+
         if (!username) {
-            return res.sendStatus(400);
+            return res.sendStatus(400)
         }
-        const user = await UserModel.findByIdAndUpdate(id, { username }, { new: true });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        res.status(200).json(user);
+
+        // Retrieve user by ID
+        const user = await getUserById(id);
+
+        // Update user's username
+        user.username = username;
+
+        // Save the updated user
+        await user.save();
+
+        return res.status(200).json(user).end();
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.sendStatus(400);
     }
-};
+}
