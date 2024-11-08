@@ -5,8 +5,8 @@ import { isAuthenticated } from '../middlewares/index';
 import { getUsersBySessionToken } from '../controllers/users';
 
 export default (router: express.Router) => {
-    router.post('/auth/register', register)
-    router.post('/auth/login', login)
+    router.post(`${path}/register`, register);
+    router.post(`${path}/login`, login);
     // Add route to get user by session token
     router.get('/users/session/:sessionToken', isAuthenticated, async (req, res) => {
         try {
