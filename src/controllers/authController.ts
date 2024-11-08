@@ -49,17 +49,25 @@ export const registerUser = async (req: express.Request, res: express.Response) 
     try {
         const { email, password, username, nationality, role, phone } = req.body;
 
+        console.log("Step1");
+
         if (!email || !password || !username || !phone) {
             return res.status(400).json({ message: 'All required fields must be provided' });
         }
+
+        console.log("Step2");
 
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
+        console.log("Step3");
+
         const salt = random();
         const hashedPassword = authentication(salt, password);
+
+        console.log("Step4");
 
         const user = new UserModel({
             username,
