@@ -12,6 +12,7 @@ import invoice from './invoiceRoutes';
 const router = express.Router();
 
 export default (): express.Router => {
+    // Initialize each route with only the router parameter, as observed
     authentication(router);
     users(router);
     product(router);
