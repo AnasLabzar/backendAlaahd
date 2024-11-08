@@ -1,12 +1,12 @@
-import { Router } from 'express';
-import { getAllUsers, getCustomerUsers, getUserById, deleteUserById, updateUserById } from '../controllers/userController';
+import express from 'express'
 
-const router = Router();
+import { deleteUser, getAllUsers, updateUser, getUsersById } from '../controllers/userController'
+import { isAuthenticated, isOwner } from '../middlewares/index';
+// import { isAuthenticated, isOwner } from '../middlewares';
 
-router.get('/users', getAllUsers);
-router.get('/users/custom', getCustomerUsers);
-router.get('/users/:id', getUserById);
-router.delete('/users/:id', deleteUserById);
-router.put('/users/:id', updateUserById);
-
-export default router;
+export default (router: express.Router) => {
+    router.get('/allusers', getAllUsers);
+    router.get('/users/:id', getUsersById);
+    router.delete('/users/:id', isAuthenticated, isOwner, deleteUser);
+    router.patch('/users/:id', isAuthenticated, isOwner, updateUser);
+}
