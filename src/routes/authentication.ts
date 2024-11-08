@@ -1,12 +1,12 @@
 import express from 'express';
 
-import { login, register } from '../controllers/authentication';
+import { login, register } from '../controllers/authController';
 import { isAuthenticated } from '../middlewares/index';
-import { getUsersBySessionToken } from '../controllers/users';
+import { getUsersBySessionToken } from '../controllers/userController';
 
 export default (router: express.Router) => {
-    router.post(`${path}/register`, register);
-    router.post(`${path}/login`, login);
+    router.post(`/auth/register`, register);
+    router.post(`/auth/login`, login);
     // Add route to get user by session token
     router.get('/users/session/:sessionToken', isAuthenticated, async (req, res) => {
         try {
