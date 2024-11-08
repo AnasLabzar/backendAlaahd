@@ -1,91 +1,72 @@
 import express from 'express';
-import { authentication, random } from '../helper';
-import { UserModel, IUser } from '../models/User';
-import mongoose from 'mongoose'; // Ensure mongoose is imported for ObjectId type
+import { authentication, random } from '../helpers';
+import { createUser, getUserByEmail } from '../models/User';
 
-export const loginUser = async (req: express.Request, res: express.Response) => {
+export const login = async (req: express.Request, res: express.Response) => {
     try {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required' });
+            return res.sendStatus(400);
         }
 
-        // Fetch the user and explicitly cast it to `IUser | null`
-        const user = (await UserModel.findOne({ email }).select('+authentication.password +authentication.salt')) as IUser | null;
+        const user = await getUserByEmail(email).select(' +authentication.salt +authentication.password');
 
-        if (!user || !user.authentication?.salt || !user.authentication.password) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+        if (!user) {
+            return res.sendStatus(400);
         }
 
         const expectedHash = authentication(user.authentication.salt, password);
 
-        if (user.authentication.password !== expectedHash) {
-            return res.status(403).json({ message: 'Invalid credentials' });
+        if (user.authentication.password !== expectedHash ) {
+            return res.sendStatus(403);
         }
 
         const salt = random();
-        
-        // Explicitly cast `_id` to `string` if TypeScript is still uncertain
-        user.authentication.sessionToken = authentication(salt, (user._id as mongoose.Types.ObjectId).toString());
+        user.authentication.sessionToken = authentication(salt, user._id.toString());
 
         await user.save();
 
-        res.cookie('ANAS-AUTH', user.authentication.sessionToken, {
-            domain: 'https://backendalaahd.onrender.com',
-            path: '/',
-        });
+        res.cookie('ANAS-AUTH', user.authentication.sessionToken, { domain: 'localhost', path: '/' });
 
-        return res.status(200).json({ message: 'Login successful', user }).end();
+        return res.status(200).json(user).end();
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: 'Server error', error: (error as Error).message });
+        return res.sendStatus(400);
     }
-};
+}
 
-// Register function
-export const registerUser = async (req: express.Request, res: express.Response) => {
+export const register = async (req: express.Request, res: express.Response) => {
     try {
         const { email, password, username, nationality, role, phone } = req.body;
 
-        console.log("Step1");
-
-        if (!email || !password || !username || !phone) {
-            return res.status(400).json({ message: 'All required fields must be provided' });
+        if (!email || !password || !username || !role) {
+            return res.sendStatus(400)
         }
 
-        console.log("Step2");
+        const existingUser = await getUserByEmail(email);
 
-        const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+            return res.sendStatus(400)
         }
-
-        console.log("Step3");
 
         const salt = random();
-        const hashedPassword = authentication(salt, password);
-
-        console.log("Step4");
-
-        const user = new UserModel({
+        const user = await createUser({
             username,
             email,
             role,
-            phone,
-            nationality,
             authentication: {
                 salt,
-                password: hashedPassword,
+                password: authentication(salt, password),
             },
+            nationality,
+            phone
         });
 
-        await user.save();
-
-        return res.status(201).json({ message: 'User registered successfully', user }).end();
+        return  res.status(200).json(user).end();
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: 'Server error', error: (error as Error).message });
+        return res.sendStatus(400);
     }
-};
+}
