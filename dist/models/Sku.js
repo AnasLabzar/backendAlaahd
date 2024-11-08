@@ -27,8 +27,8 @@ exports.SKU = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const SKUSchema = new mongoose_1.Schema({
     skuCode: { type: String, required: true }, // SKU code for product
-    productId: { type: String, required: true }, // Reference to product ID
+    barcode: { type: String }, // Reference to product ID
     fetchedAt: { type: Date, default: Date.now }, // Record fetch date
 });
-exports.SKU = mongoose_1.default.model('SKU', SKUSchema);
+exports.SKU = mongoose_1.default.model('skus', SKUSchema);
 //# sourceMappingURL=Sku.js.map

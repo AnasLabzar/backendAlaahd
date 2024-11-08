@@ -5,6 +5,7 @@ const skuControllers_1 = require("../controllers/skuControllers");
 const router = (0, express_1.Router)();
 // Create a new SKU
 router.post('/skus', skuControllers_1.createSKU);
+router.get('/skus/:id', skuControllers_1.getSkuById);
 // Get all SKUs
 router.get('/skus', skuControllers_1.getAllSKUs);
 exports.default = router;

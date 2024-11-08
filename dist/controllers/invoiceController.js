@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFilteredInvoices = exports.getAllInvoices = exports.createInvoice = void 0;
+exports.getFilteredInvoices = exports.getInvoiceById = exports.getAllInvoices = exports.createInvoice = void 0;
 const Invoice_1 = require("../models/Invoice");
 // Create an Invoice
 const createInvoice = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -34,6 +34,21 @@ const getAllInvoices = (_req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getAllInvoices = getAllInvoices;
+// Get an order by ID
+const getInvoiceById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const invoice = yield Invoice_1.Invoice.findById(req.params.id);
+        if (!invoice) {
+            return res.status(404).json({ message: 'Invoice not found' });
+        }
+        res.json(invoice);
+    }
+    catch (err) {
+        const errorMessage = err.message;
+        res.status(500).json({ error: errorMessage });
+    }
+});
+exports.getInvoiceById = getInvoiceById;
 // Get filtered and counted invoices (week/month/year)
 const getFilteredInvoices = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { filter } = req.query;

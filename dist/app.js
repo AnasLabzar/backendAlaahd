@@ -15,7 +15,8 @@ const colorRoutes_1 = __importDefault(require("./routes/colorRoutes"));
 const sizeRoutes_1 = __importDefault(require("./routes/sizeRoutes"));
 const skuRoutes_1 = __importDefault(require("./routes/skuRoutes"));
 const invoiceRoutes_1 = __importDefault(require("./routes/invoiceRoutes"));
-const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
+const authentication_1 = __importDefault(require("./routes/authentication"));
+const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 // Install cors: npm install cors
 // Load environment variables
 dotenv_1.default.config();
@@ -33,7 +34,8 @@ app.use('/api', colorRoutes_1.default);
 app.use('/api', sizeRoutes_1.default);
 app.use('/api', skuRoutes_1.default);
 app.use('/api', invoiceRoutes_1.default);
-app.use('/api', authRoutes_1.default);
+app.use('/api', authentication_1.default);
+app.use('/api', userRoutes_1.default);
 // MongoDB connection
 mongoose_1.default.connect(process.env.MONGO_URI)
     .then(() => {

@@ -8,6 +8,8 @@ const invoiceController_1 = require("../controllers/invoiceController");
 const router = express_1.default.Router();
 // Create an invoice
 router.post('/invoices', invoiceController_1.createInvoice);
+// Route to get an order by ID
+router.get('/invoices/:id', invoiceController_1.getInvoiceById);
 // Get all invoices
 router.get('/invoices', invoiceController_1.getAllInvoices);
 // Get filtered invoices (week, month, year)

@@ -1,47 +1,44 @@
 import express from 'express';
 import { get, merge } from 'lodash';
-import { getUserBySessionToken } from '../models/User';
+import { UserModel } from '../models/User'; // Import UserModel here
 
+// Middleware to check if the user is the owner
 export const isOwner = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
         const { id } = req.params;
         const currentUserId = get(req, 'identity._id', '') as string;
 
-        if (!currentUserId) {
-            return res.sendStatus(403);
-        }
-
-        if (currentUserId.toString() !== id) {
-            return res.sendStatus(403);
+        if (!currentUserId || currentUserId.toString() !== id) {
+            return res.sendStatus(403); // Forbidden
         }
 
         next();
     } catch (error) {
         console.log(error);
-        res.sendStatus(400);
+        res.sendStatus(400); // Bad Request
     }
 };
 
+// Middleware to check if the user is authenticated
 export const isAuthenticated = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
         const sessionToken = req.cookies['ANAS-AUTH'];
 
         if (!sessionToken) {
-            return res.sendStatus(403);
+            return res.sendStatus(403); // Forbidden
         }
 
-        const existingUser = await getUserBySessionToken(sessionToken);
+        const existingUser = await UserModel.getUserBySessionToken(sessionToken); // Use the new method
 
         if (!existingUser) {
-            return res.sendStatus(403);
+            return res.sendStatus(403); // Forbidden
         }
 
         merge(req, { identity: existingUser });
-
-        return next();
+        next();
     } catch (error) {
         console.log(error);
-        res.sendStatus(400);
+        res.sendStatus(400); // Bad Request
     }
 };
 
@@ -55,7 +52,6 @@ export const hasRole = (roles: string[]) => {
                 return res.sendStatus(403); // Forbidden
             }
 
-            // Check the user's role from the identity
             const userRole = get(req, 'identity.role', null) as string | null;
 
             if (!userRole || !roles.includes(userRole)) {

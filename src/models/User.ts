@@ -1,13 +1,13 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
+// Define the interface for TypeScript with the new structure
 export interface IUser extends Document {
-  _id: Types.ObjectId;
   username: string;
   email: string;
   authentication: {
     password: string;
     salt?: string;
-    sessionToken?: string;
+    sessionToken?: string; // Add sessionToken here
   };
   role: string;
   score?: string;
@@ -16,22 +16,34 @@ export interface IUser extends Document {
   nationality?: string;
 }
 
+// Define the interface for the static method
+interface IUserModel extends Model<IUser> {
+  getUserBySessionToken(sessionToken: string): Promise<IUser | null>;
+}
+
+// Define the User schema
 const UserSchema: Schema<IUser> = new Schema({
   username: { type: String, required: true },
-  email: { type: String, required: false, default: '' },
+  email: { type: String },
   authentication: {
     password: { type: String, required: true, select: false },
     salt: { type: String, select: false },
-    sessionToken: { type: String, select: false },
+    sessionToken: { type: String, select: false }, // Define sessionToken in the schema
   },
   role: {
     type: String,
     enum: ['admin', 'moder', 'custom', 'fourn'],
     default: 'custom',
   },
-  score: { type: String, default: '0' },
+  score: { type: String },
   phone: { type: String, required: true },
   fetchedAt: { type: Date, default: Date.now, required: true },
 });
 
-export const UserModel = mongoose.model<IUser>('User', UserSchema);
+// Implement the static method on the schema
+UserSchema.statics.getUserBySessionToken = async function (sessionToken: string) {
+  return await this.findOne({ 'authentication.sessionToken': sessionToken }).select('+authentication.sessionToken');
+};
+
+// Export the UserModel with IUserModel as its type
+export const UserModel = mongoose.model<IUser, IUserModel>('User', UserSchema);

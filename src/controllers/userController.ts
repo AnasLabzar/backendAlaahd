@@ -1,22 +1,82 @@
-import express from 'express';
-import { UserModel } from '../models/userModel';
+import { Request, Response } from 'express';
+import { UserModel } from '../models/User';
 
-// Get all users
-export const getAllUsers = async (req: express.Request, res: express.Response) => {
+
+// Get all SKUs
+export const getAllUsers = async (_req: Request, res: Response) => {
+  try {
+    const users = await UserModel.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
+
+// Function to get all customers
+export const getCustomerUsers = async (req: Request, res: Response) => {
     try {
-        const users = await UserModel.find();
-        res.status(200).json(users);
+        const customers = await UserModel.find({ role: 'custom' });
+        res.status(200).json(customers);
     } catch (error) {
-        console.error('Error fetching users:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: (error as Error).message });
     }
 };
 
-// Get user by session token
+// Function to get user by ID
+export const getUserById = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const user = await UserModel.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+// Function to get user by session token
 export const getUserBySessionToken = async (sessionToken: string) => {
     const user = await UserModel.findOne({ 'authentication.sessionToken': sessionToken });
     if (!user) {
         throw new Error('User not found');
     }
     return user;
+};
+
+// Function to delete user by ID
+export const deleteUserById = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const deletedUser = await UserModel.findByIdAndDelete(id);
+        if (!deletedUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.status(200).json(deletedUser);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(400);
+    }
+};
+
+// Function to update user
+export const updateUserById = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { username } = req.body;
+        if (!username) {
+            return res.sendStatus(400);
+        }
+        const user = await UserModel.findByIdAndUpdate(id, { username }, { new: true });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(400);
+    }
 };
