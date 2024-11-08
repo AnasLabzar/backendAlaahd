@@ -1,7 +1,7 @@
-import express from 'express';
+import { Router } from 'express';
 import { getAllUsers, getCustomerUsers, getUserById, deleteUserById, updateUserById } from '../controllers/userController';
 
-const router = express.Router();
+const router = Router();
 
 router.get('/users', getAllUsers);
 router.get('/users/custom', getCustomerUsers);
