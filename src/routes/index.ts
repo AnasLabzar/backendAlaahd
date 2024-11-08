@@ -12,16 +12,16 @@ import invoice from './invoiceRoutes';
 const router = express.Router();
 
 export default (): express.Router => {
-    // Initialize each route with only the router parameter, as observed
-    authentication(router);
-    users(router);
-    product(router);
-    category(router);
-    sku(router);
-    colors(router);
-    prices(router);
-    orders(router);
-    invoice(router);
+    // Updated to include the required path and options (if any)
+    authentication(router, '/auth', null);
+    users(router, '/users', null);
+    product(router, '/products', null);
+    category(router, '/categories', null);
+    sku(router, '/sku', null);
+    colors(router, '/colors', null);
+    prices(router, '/prices', null);
+    orders(router, '/orders', null);
+    invoice(router, '/invoices', null);
 
     return router;
 };
