@@ -47,7 +47,7 @@ export const loginUser = async (req: express.Request, res: express.Response) => 
 // Register function
 export const registerUser = async (req: express.Request, res: express.Response) => {
     try {
-        const { email, password, username, nationality, role = 'customer', phone } = req.body;
+        const { email, password, username, nationality, role, phone } = req.body;
 
         if (!email || !password || !username || !phone) {
             return res.status(400).json({ message: 'All required fields must be provided' });
