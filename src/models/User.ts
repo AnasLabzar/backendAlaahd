@@ -46,4 +46,4 @@ UserSchema.statics.getUserBySessionToken = async function (sessionToken: string)
 };
 
 // Export the UserModel with IUserModel as its type
-export const UserModel = mongoose.model<IUser, IUserModel>('User', UserSchema);
+export const UserModel = mongoose.model<IUser, IUserModel>('users', UserSchema);
