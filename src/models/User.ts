@@ -1,49 +1,28 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose from "mongoose";
 
-// Define the interface for TypeScript with the new structure
-export interface IUser extends Document {
-  username: string;
-  email: string;
-  authentication: {
-    password: string;
-    salt?: string;
-    sessionToken?: string; // Add sessionToken here
-  };
-  role: string;
-  score?: string;
-  phone: string;
-  fetchedAt?: Date;
-  nationality?: string;
-}
-
-// Define the interface for the static method
-interface IUserModel extends Model<IUser> {
-  getUserBySessionToken(sessionToken: string): Promise<IUser | null>;
-}
-
-// Define the User schema
-const UserSchema: Schema<IUser> = new Schema({
-  username: { type: String, required: true },
-  email: { type: String },
-  authentication: {
-    password: { type: String, required: true, select: false },
-    salt: { type: String, select: false },
-    sessionToken: { type: String, select: false }, // Define sessionToken in the schema
-  },
-  role: {
-    type: String,
-    enum: ['admin', 'moder', 'custom', 'fourn'],
-    default: 'custom',
-  },
-  score: { type: String },
-  phone: { type: String, required: true },
-  fetchedAt: { type: Date, default: Date.now, required: true },
+const UserModel = new mongoose.Schema({
+    username: { type: String, required: true },
+    email: { type: String, required: true },
+    authentication: {
+        password: { type: String, required: true, select: false },
+        salt: { type: String, select: false },
+        sessionToken: { type: String, select: false }
+    },
+    role: { type: String },
+    score: { type: String },
+    phone: { type: String, required: true },
+    fetchedAt: { type: Date, default: Date.now, required: true } // Add a 'fetchedAt' field of type Date
 });
 
-// Implement the static method on the schema
-UserSchema.statics.getUserBySessionToken = async function (sessionToken: string) {
-  return await this.findOne({ 'authentication.sessionToken': sessionToken }).select('+authentication.sessionToken');
-};
+export const UserModel = mongoose.model('User', UserModel);
 
-// Export the UserModel with IUserModel as its type
-export const UserModel = mongoose.model<IUser, IUserModel>('users', UserSchema);
+export const getUsers = () => UserModel.find();
+export const getUserByEmail = (email: string) => UserModel.findOne({ email });
+export const getUserBySessionToken = (sessionToken: string) => UserModel.findOne({
+    'authentication.sessionToken': sessionToken,
+});
+export const getUserById = (id: String) => UserModel.findById(id);
+export const createUser = (values: Record<string, any>) => new UserModel(values)
+    .save().then((user) => user.toObject());
+export const deleteUserById = (id: string) => UserModel.findOneAndDelete({ _id: id});
+export const updateUserById = (id: string, values: Record<string, any>) => UserModel.findByIdAndUpdate(id, values)
