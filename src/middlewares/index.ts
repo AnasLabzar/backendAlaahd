@@ -1,28 +1,29 @@
 import express from 'express'
 import { get, merge } from 'lodash'
 
-import { getUserBySessionToken } from '../models/User'
+import { UserModel } from '../models/User'
 
 export const isOwner = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
-        const { id } =  req.params;
-        const currentUserId = get(req, 'identity._id') as string;
+        const { id } = req.params;
+        const currentUserId: unknown = get(req, 'identity._id');
 
-        if (!currentUserId) {
-            return res.sendStatus(403);
-        }
-
-        if (currentUserId.toString() !== id) {
-            return res.sendStatus(403);
+        if (typeof currentUserId === 'string') {
+            // currentUserId is a string
+            if (currentUserId !== id) {
+                return res.sendStatus(403);
+            }
+        } else {
+            // Handle the case where currentUserId is not a string
+            return res.sendStatus(401);
         }
 
         next();
     } catch (error) {
         console.log(error);
-        res.sendStatus(400)
-        
+        res.sendStatus(400);
     }
-}
+};
 
 export const isAuthenticated = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
@@ -32,7 +33,7 @@ export const isAuthenticated = async (req: express.Request, res: express.Respons
             return res.sendStatus(403);
         }
 
-        const existingUser = await getUserBySessionToken(sessionToken);
+        const existingUser = await UserModel.getUserBySessionToken(sessionToken);
 
         if (!existingUser) {
             return res.sendStatus(403);
@@ -45,4 +46,4 @@ export const isAuthenticated = async (req: express.Request, res: express.Respons
         console.log(error);
         res.sendStatus(400);
     }
-}
+};

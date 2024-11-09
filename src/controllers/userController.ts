@@ -1,15 +1,9 @@
 import express from 'express';
-import {
-    deleteUserById,
-    getUserByEmail,
-    getUserBySessionToken,
-    getUsers,
-    getUserById, // Fix typo in function name here
-} from '../models/User';
+import { UserModel } from '../models/User';
 
 export const getAllUsers = async (req: express.Request, res: express.Response) => {
     try {
-        const users = await getUsers();
+        const users = await UserModel.getUsers();
         return res.status(200).json(users);
     } catch (error) {
         console.log(error);
@@ -21,7 +15,7 @@ export const getAllUsers = async (req: express.Request, res: express.Response) =
 export const getUsersById = async (req: express.Request, res: express.Response) => {
     try {
         const { id } = req.params; // Extract id from request parameters
-        const user = await getUserById(id);
+        const user = await UserModel.getUserById(id);
         console.log(user);
         return res.status(200).json(user);
     } catch (error) {
@@ -33,7 +27,7 @@ export const getUsersById = async (req: express.Request, res: express.Response) 
 // Function to get user by session token
 export const getUsersBySessionToken = async (sessionToken: string) => {
     try {
-        const user = await getUserBySessionToken(sessionToken); // Corrected the function call here
+        const user = await UserModel.getUserBySessionToken(sessionToken); // Corrected the function call here
         return user;
     } catch (error) {
         throw new Error('User not found');
@@ -45,7 +39,7 @@ export const getUsersBySessionToken = async (sessionToken: string) => {
 export const deleteUser = async (req: express.Request, res: express.Response) => {
     try {
         const { id } = req.params;
-        const deletedUser = await deleteUserById(id);
+        const deletedUser = await UserModel.deleteUserById(id);
         return res.json(deletedUser);
     } catch (error) {
         console.log(error);
@@ -63,7 +57,7 @@ export const updateUser = async (req: express.Request, res: express.Response) =>
         }
 
         // Retrieve user by ID
-        const user = await getUserById(id);
+        const user = await UserModel.getUserById(id);
 
         // Update user's username
         user.username = username;

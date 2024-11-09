@@ -1,6 +1,8 @@
 import express from 'express';
-import { authentication, random } from '../helper';
-import { createUser, getUserByEmail } from '../models/User';
+import { authentication, random } from '../helper'; // Assuming these are helper functions
+import { UserModel } from '../models/User'; // Import the functions
+import bcrypt from 'bcrypt';
+
 
 export const login = async (req: express.Request, res: express.Response) => {
     try {
@@ -10,15 +12,22 @@ export const login = async (req: express.Request, res: express.Response) => {
             return res.sendStatus(400);
         }
 
-        const user = await getUserByEmail(email).select(' +authentication.salt +authentication.password');
+        const user = await UserModel.getUserByEmail(email);
 
         if (!user) {
             return res.sendStatus(400);
         }
 
+        const isMatch = await bcrypt.compare(password, user.authentication.password);
+
+        if (!isMatch) {
+            return res.sendStatus(403);
+        }
+
+
         const expectedHash = authentication(user.authentication.salt, password);
 
-        if (user.authentication.password !== expectedHash ) {
+        if (user.authentication.password !== expectedHash) {
             return res.sendStatus(403);
         }
 
@@ -30,7 +39,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         res.cookie('ANAS-AUTH', user.authentication.sessionToken, { domain: 'localhost', path: '/' });
 
         return res.status(200).json(user).end();
-        
+
     } catch (error) {
         console.log(error);
         return res.sendStatus(400);
@@ -39,32 +48,36 @@ export const login = async (req: express.Request, res: express.Response) => {
 
 export const register = async (req: express.Request, res: express.Response) => {
     try {
-        const { email, password, username, nationality, role, phone } = req.body;
+        const { email, password, username, role, phone } = req.body;
 
         if (!email || !password || !username || !role) {
             return res.sendStatus(400)
         }
 
-        const existingUser = await getUserByEmail(email);
+        const existingUser = await UserModel.getUserByEmail(email);
 
         if (existingUser) {
             return res.sendStatus(400)
         }
 
         const salt = random();
-        const user = await createUser({
-            username,
-            email,
-            role,
-            authentication: {
-                salt,
-                password: authentication(salt, password),
-            },
-            nationality,
-            phone
-        });
+        const plainTextPassword = req.body.password; // Assuming password is in req.body
+        const hashedPassword = await bcrypt.hash(plainTextPassword, salt);
 
-        return  res.status(200).json(user).end();
+        // Assuming you have the user data in req.body
+        const userData: UserModel = {
+            username: req.body.username,
+            email: req.body.email,
+            password: hashedPassword, // Assuming you have a hashed password
+            salt: salt,
+            role: req.body.role,
+            phone: req.body.phone,
+            // ... other fields as needed
+        };
+
+        const user = await UserModel.createUser(userData); // Pass the user data here
+
+        return res.status(200).json(user).end();
     } catch (error) {
         console.log(error);
         return res.sendStatus(400);

@@ -1,6 +1,20 @@
 import mongoose from "mongoose";
 
-const UserModel = new mongoose.Schema({
+interface UserDocument extends mongoose.Document {
+    username: string;
+    email: string;
+    authentication: {
+        password: string;
+        salt: string;
+        sessionToken: string;
+    };
+    role: string;
+    score: string;
+    phone: string;
+    fetchedAt: Date;
+}
+
+const UserModelSchema = new mongoose.Schema<UserDocument>({
     username: { type: String, required: true },
     email: { type: String, required: true },
     authentication: {
@@ -14,15 +28,37 @@ const UserModel = new mongoose.Schema({
     fetchedAt: { type: Date, default: Date.now, required: true } // Add a 'fetchedAt' field of type Date
 });
 
-export const UserModel = mongoose.model('User', UserModel);
+export class UserModel extends mongoose.Model<UserDocument> {
+    static async getUsers() {
+        return await this.find();
+    }
 
-export const getUsers = () => UserModel.find();
-export const getUserByEmail = (email: string) => UserModel.findOne({ email });
-export const getUserBySessionToken = (sessionToken: string) => UserModel.findOne({
-    'authentication.sessionToken': sessionToken,
-});
-export const getUserById = (id: String) => UserModel.findById(id);
-export const createUser = (values: Record<string, any>) => new UserModel(values)
-    .save().then((user) => user.toObject());
-export const deleteUserById = (id: string) => UserModel.findOneAndDelete({ _id: id});
-export const updateUserById = (id: string, values: Record<string, any>) => UserModel.findByIdAndUpdate(id, values)
+    static async getUserByEmail(email: string) {
+        return await this.findOne({ email });
+    }
+
+    static async getUserBySessionToken(sessionToken: string) {
+        return await this.findOne({
+            'authentication.sessionToken': sessionToken,
+        });
+    }
+
+    static async getUserById(id: String) {
+        return await this.findById(id);
+    }
+
+    static async createUser(values: UserDocument): Promise<UserDocument> {
+        const user = new this(values);
+        return (await user.save()).toObject();
+    }
+
+    static async deleteUserById(id: string) {
+        return await this.findOneAndDelete({ _id: id });
+    }
+
+    static async updateUserById(id: string, values: Record<string, any>) {
+        return await this.findByIdAndUpdate(id, values);
+    }
+}
+
+export default UserModel;
