@@ -1,6 +1,7 @@
 import express from 'express';
 import { authentication, random } from '../helper'; // Assuming these are helper functions
 import { User } from '../models/User'; // Import the User model
+import { IUser } from '../models/User'; // Import the User model
 import bcrypt from 'bcrypt';
 
 export const login = async (req: express.Request, res: express.Response) => {
@@ -8,39 +9,42 @@ export const login = async (req: express.Request, res: express.Response) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.sendStatus(400);  // Bad request if email or password is missing
+            return res.status(400).json({ message: "Email and password are required" });
         }
 
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.sendStatus(400);  // User not found
+            return res.status(400).json({ message: "User not found" });
         }
 
-        // Use bcrypt to compare the input password with the stored hash
-        const isMatch = await bcrypt.compare(password, user.authentication.password);
+        // Extract password and salt from the user object
+        const typedUser = user as IUser;
+
+        // Compare the provided password with the stored hashed password
+        const isMatch = await bcrypt.compare(password, typedUser.authentication.password);
 
         if (!isMatch) {
-            return res.sendStatus(403);  // Forbidden if password does not match
+            return res.status(403).json({ message: "Invalid credentials" });
         }
 
-        // If password matches, generate a session token and save it
-        const salt = random();  // Generate a new salt for the session token
-        user.authentication.sessionToken = authentication(salt, user._id.toString());
+        // If passwords match, generate and store the session token
+        const salt = random();  // Create a new salt for session token (or any random string generation method)
+        typedUser.authentication.sessionToken = authentication(salt, typedUser._id.toString());
 
-        // Save the updated user with the new session token
-        await user.save();
+        // Save the updated user with the session token
+        await typedUser.save();
 
         // Send the session token as a cookie in the response
-        res.cookie('ANAS-AUTH', user.authentication.sessionToken, {
-            domain: 'localhost',  // Update the domain as per your deployment
+        res.cookie('ANAS-AUTH', typedUser.authentication.sessionToken, {
+            domain: 'localhost',  // Adjust based on your environment
             path: '/',
         });
 
-        return res.status(200).json(user);  // Return the user object
+        return res.status(200).json(typedUser);  // Return user object
     } catch (error) {
         console.log(error);
-        return res.sendStatus(400);  // Handle any errors
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
 
