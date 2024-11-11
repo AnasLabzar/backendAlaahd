@@ -7,9 +7,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
         return res.status(200).json(users);
     } catch (error) {
         console.log(error);
-        res.sendStatus(400)
+        return res.status(400).json({ message: 'Failed to fetch users', error });
     }
 }
+
 
 // // Function to get user by ID
 // export const getUsersById = async (req: Request, res: Response) => {
