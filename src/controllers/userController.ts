@@ -36,7 +36,7 @@ export const getUsersBySessionToken = async (sessionToken: string) => {
 
 
 
-export const deleteUser = async (req: express.Request, res: express.Response) => {
+export const deleteUser = async (_req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const deletedUser = await UserModel.deleteUserById(id);
@@ -47,7 +47,7 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
     }
 }
 
-export const updateUser = async (req: express.Request, res: express.Response) => {
+export const updateUser = async (_req: Request, res: Response) => {
     try {
         const { id } =  req.params;
         const { username } = req.body;
