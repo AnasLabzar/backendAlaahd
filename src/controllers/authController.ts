@@ -64,7 +64,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         await typedUser.save();
 
         // Set session token in cookie
-        res.cookie('ANAS-AUTH', typedUser.authentication.sessionToken, { domain: 'localhost', path: '/' });
+        res.cookie('ANAS-AUTH', typedUser.authentication.sessionToken, { domain: 'backendalaahd.onrender.com', path: '/' });
         
         console.log("test5");
 
