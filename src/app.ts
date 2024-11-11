@@ -27,7 +27,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
-const allowedOrigins = ['https://backendalaahd.onrender.com'];
+const allowedOrigins = ['http://localhost:3000', 'https://backendalaahd.onrender.com'];
 
 // Configure CORS
 app.use(cors({
