@@ -7,50 +7,69 @@ import bcrypt from 'bcrypt';
 export const login = async (req: express.Request, res: express.Response) => {
     try {
         const { email, password } = req.body;
-         console.log("test1");
+        console.log("test1");
+
+        // Check if both email and password are provided
         if (!email || !password) {
+            console.log("Missing email or password");
             return res.sendStatus(400);
         }
 
+        // Find user by email
         const user = await User.findOne({ email });
 
         if (!user) {
+            console.log("User not found");
             return res.sendStatus(400);
         }
 
-         console.log("test2");
+        console.log("test2");
 
         // Type assertion for user to be of type IUser
         const typedUser = user as IUser;
 
+        // Check if password and user password are both valid
+        if (!typedUser.authentication || !typedUser.authentication.password) {
+            console.log("Stored password not found");
+            return res.sendStatus(400);
+        }
+
+        // Compare the provided password with the stored hashed password
         const isMatch = await bcrypt.compare(password, typedUser.authentication.password);
 
         if (!isMatch) {
+            console.log("Password mismatch");
             return res.sendStatus(403);
         }
 
-         console.log("test3");
+        console.log("test3");
+
+        // Expected hash comparison (this may not be needed if bcrypt works correctly)
         const expectedHash = authentication(typedUser.authentication.salt, password);
 
         if (typedUser.authentication.password !== expectedHash) {
+            console.log("Expected hash mismatch");
             return res.sendStatus(403);
         }
 
         const salt = random();
         typedUser.authentication.sessionToken = authentication(salt, typedUser._id.toString());
 
-         console.log("test4");
+        console.log("test4");
+
         await typedUser.save();
 
+        // Set session token in cookie
         res.cookie('ANAS-AUTH', typedUser.authentication.sessionToken, { domain: 'localhost', path: '/' });
-         console.log("test5");
-        return res.status(200).json(typedUser).end();
+        
+        console.log("test5");
 
+        return res.status(200).json(typedUser).end();
     } catch (error) {
         console.log(error);
         return res.sendStatus(400);
     }
-}
+};
 
 export const register = async (req: express.Request, res: express.Response) => {
     try {
