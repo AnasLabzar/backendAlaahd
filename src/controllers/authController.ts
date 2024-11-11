@@ -23,8 +23,12 @@ export const login = async (req: express.Request, res: express.Response) => {
 
         const typedUser = user as IUser;
 
-        // Check if the password field exists
+        // Log the password hash field to see if it's undefined
         console.log("Stored password hash:", typedUser.authentication?.password);
+
+        if (!typedUser.authentication?.password) {
+            return res.status(400).json({ message: "Password hash not found" });
+        }
 
         // Compare the provided password with the stored hashed password
         const isMatch = await bcrypt.compare(password, typedUser.authentication?.password);
@@ -54,6 +58,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 
 export const register = async (req: express.Request, res: express.Response) => {
