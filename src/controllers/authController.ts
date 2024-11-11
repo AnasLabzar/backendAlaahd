@@ -8,15 +8,21 @@ export const login = async (req: express.Request, res: express.Response) => {
     try {
         const { email, password } = req.body;
 
+        console.log("test1");
+
         if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
         }
+
+        console.log("test2");
 
         const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
+
+        console.log("test3");
 
         const password = "easycafe";  // Plain text password
         const hashedPassword = "$2b$10$7u3oRcn328hyrVabSkqnseOQxkZERb7tqWDvX9cwx.zPrrAjV7HZe";  // Example hash
@@ -29,6 +35,8 @@ export const login = async (req: express.Request, res: express.Response) => {
             }
         });
 
+        console.log("test4");
+
         // Extract password and salt from the user object
         const typedUser = user as IUser;
 
@@ -39,6 +47,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         // Compare the provided password with the stored hashed password
         const isMatch = await bcrypt.compare(password, typedUser.authentication.password);
 
+        console.log("test5");
         if (!isMatch) {
             return res.status(403).json({ message: "Invalid credentials" });
         }
@@ -46,7 +55,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         // If passwords match, generate and store the session token
         const salt = random();  // Create a new salt for session token (or any random string generation method)
         typedUser.authentication.sessionToken = authentication(salt, typedUser._id.toString());
-
+        console.log("test6");
         // Save the updated user with the session token
         await typedUser.save();
 
