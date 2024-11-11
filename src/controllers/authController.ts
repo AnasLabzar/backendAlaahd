@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 
 export const login = async (req: express.Request, res: express.Response) => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body;  // Get email and password from request body
 
         console.log("test1");
 
@@ -24,18 +24,7 @@ export const login = async (req: express.Request, res: express.Response) => {
 
         console.log("test3");
 
-        const password = "easycafe";  // Plain text password
-        const hashedPassword = "$2b$10$7u3oRcn328hyrVabSkqnseOQxkZERb7tqWDvX9cwx.zPrrAjV7HZe";  // Example hash
-        
-        bcrypt.compare(password, hashedPassword, function(err, result) {
-            if (err) {
-                console.error(err);
-            } else {
-                console.log(result);  // Should print true if the passwords match
-            }
-        });
-
-        console.log("test4");
+        // No need to redefine 'password' here. Just use the password from req.body directly.
 
         // Extract password and salt from the user object
         const typedUser = user as IUser;
@@ -47,7 +36,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         // Compare the provided password with the stored hashed password
         const isMatch = await bcrypt.compare(password, typedUser.authentication.password);
 
-        console.log("test5");
+        console.log("test4");
         if (!isMatch) {
             return res.status(403).json({ message: "Invalid credentials" });
         }
@@ -55,13 +44,14 @@ export const login = async (req: express.Request, res: express.Response) => {
         // If passwords match, generate and store the session token
         const salt = random();  // Create a new salt for session token (or any random string generation method)
         typedUser.authentication.sessionToken = authentication(salt, typedUser._id.toString());
-        console.log("test6");
+        console.log("test5");
+
         // Save the updated user with the session token
         await typedUser.save();
 
         // Send the session token as a cookie in the response
         res.cookie('ANAS-AUTH', typedUser.authentication.sessionToken, {
-            domain: 'localhost',  // Adjust based on your environment
+            domain: 'backendalaahd.onrender.com',  // Your live domain here
             path: '/',
         });
 
@@ -71,6 +61,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 
 export const register = async (req: express.Request, res: express.Response) => {
