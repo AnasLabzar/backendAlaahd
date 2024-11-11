@@ -1,15 +1,14 @@
 import { Request, Response } from 'express';
 import { User } from '../models/User';
 
-export const getAllUsers = async (req: Request, res: Response) => {
-    try {
-        const users = await User.find();
-        return res.status(200).json(users);
-    } catch (error) {
-        console.log(error);
-        return res.status(400).json({ message: 'Failed to fetch users', error: error.message });
-    }
-}
+export const getAllUsers = async (_req: Request, res: Response) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
 
 // // Function to get user by ID
 // export const getUsersById = async (req: Request, res: Response) => {
