@@ -7,7 +7,7 @@ import bcrypt from 'bcrypt';
 export const login = async (req: express.Request, res: express.Response) => {
     try {
         const { email, password } = req.body;
-
+         console.log("test1");
         if (!email || !password) {
             return res.sendStatus(400);
         }
@@ -18,6 +18,8 @@ export const login = async (req: express.Request, res: express.Response) => {
             return res.sendStatus(400);
         }
 
+         console.log("test2");
+
         // Type assertion for user to be of type IUser
         const typedUser = user as IUser;
 
@@ -27,6 +29,7 @@ export const login = async (req: express.Request, res: express.Response) => {
             return res.sendStatus(403);
         }
 
+         console.log("test3");
         const expectedHash = authentication(typedUser.authentication.salt, password);
 
         if (typedUser.authentication.password !== expectedHash) {
@@ -36,10 +39,11 @@ export const login = async (req: express.Request, res: express.Response) => {
         const salt = random();
         typedUser.authentication.sessionToken = authentication(salt, typedUser._id.toString());
 
+         console.log("test4");
         await typedUser.save();
 
         res.cookie('ANAS-AUTH', typedUser.authentication.sessionToken, { domain: 'localhost', path: '/' });
-
+         console.log("test5");
         return res.status(200).json(typedUser).end();
 
     } catch (error) {
