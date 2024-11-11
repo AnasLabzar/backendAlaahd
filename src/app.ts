@@ -27,6 +27,16 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
+const allowedOrigins = ['https://backendalaahd.onrender.com'];
+
+// Configure CORS
+app.use(cors({
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true, // Allow cookies to be sent with requests
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+}));
+
 // Register routes
 app.use('/api', orderRoutes);
 app.use('/api', productRoutes);
