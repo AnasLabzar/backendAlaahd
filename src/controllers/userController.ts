@@ -1,7 +1,7 @@
-import express from 'express';
+import { Request, Response } from 'express';
 import { UserModel } from '../models/User';
 
-export const getAllUsers = async (req: express.Request, res: express.Response) => {
+export const getAllUsers = async (_req: Request, res: Response) => {
     try {
         const users = await UserModel.getUsers();
         return res.status(200).json(users);
@@ -12,7 +12,7 @@ export const getAllUsers = async (req: express.Request, res: express.Response) =
 }
 
 // Function to get user by ID
-export const getUsersById = async (req: express.Request, res: express.Response) => {
+export const getUsersById = async (_req: Request, res: Response) => {
     try {
         const { id } = req.params; // Extract id from request parameters
         const user = await UserModel.getUserById(id);
