@@ -10,18 +10,18 @@ export const getAllUsers = async (_req: Request, res: Response) => {
   }
 };
 
-// // Function to get user by ID
-// export const getUsersById = async (req: Request, res: Response) => {
-//     try {
-//         const { id } = req.params; // Extract id from request parameters
-//         const user = await UserModel.getUserById(id);
-//         console.log(user);
-//         return res.status(200).json(user);
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(404).json({ error: 'User not found' });
-//     }
-// }
+// Function to get user by ID
+export const getUsersById = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params; // Extract id from request parameters
+        const user = await User.findById(id);
+        console.log(user);
+        return res.status(200).json(user);
+    } catch (error) {
+        console.log(error);
+        return res.status(404).json({ error: 'User not found' });
+    }
+}
 
 // // Function to get user by session token
 // export const getUsersBySessionToken = async (sessionToken: string) => {
