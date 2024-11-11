@@ -9,9 +9,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         const { email, password } = req.body;
         console.log("test1");
 
-        // Check if both email and password are provided
         if (!email || !password) {
-            console.log("Missing email or password");
             return res.sendStatus(400);
         }
 
@@ -19,7 +17,6 @@ export const login = async (req: express.Request, res: express.Response) => {
         const user = await User.findOne({ email });
 
         if (!user) {
-            console.log("User not found");
             return res.sendStatus(400);
         }
 
@@ -28,13 +25,16 @@ export const login = async (req: express.Request, res: express.Response) => {
         // Type assertion for user to be of type IUser
         const typedUser = user as IUser;
 
-        // Check if password and user password are both valid
+        // Log the whole user object to see if authentication and password are retrieved correctly
+        console.log("User object:", typedUser);
+
+        // Ensure that authentication and password fields exist
         if (!typedUser.authentication || !typedUser.authentication.password) {
             console.log("Stored password not found");
             return res.sendStatus(400);
         }
 
-        // Log the password from the database and the one from the request
+        // Log the password retrieved from DB and the one from the request
         console.log("Stored password: ", typedUser.authentication.password);
         console.log("Request password: ", password);
 
@@ -42,35 +42,28 @@ export const login = async (req: express.Request, res: express.Response) => {
         const isMatch = await bcrypt.compare(password, typedUser.authentication.password);
 
         if (!isMatch) {
-            console.log("Password mismatch");
             return res.sendStatus(403);
         }
 
         console.log("test3");
 
-        // Expected hash comparison (this may not be needed if bcrypt works correctly)
+        // Expected hash comparison (you can remove this if bcrypt works as expected)
         const expectedHash = authentication(typedUser.authentication.salt, password);
 
         if (typedUser.authentication.password !== expectedHash) {
-            console.log("Expected hash mismatch");
             return res.sendStatus(403);
         }
 
         const salt = random();
         typedUser.authentication.sessionToken = authentication(salt, typedUser._id.toString());
 
-        console.log("test4");
-
         await typedUser.save();
 
-        // Set session token in cookie
         res.cookie('ANAS-AUTH', typedUser.authentication.sessionToken, { domain: 'backendalaahd.onrender.com', path: '/' });
         
-        console.log("test5");
-
         return res.status(200).json(typedUser).end();
     } catch (error) {
-        console.log(error);
+        console.log("Error:", error);
         return res.sendStatus(400);
     }
 };
