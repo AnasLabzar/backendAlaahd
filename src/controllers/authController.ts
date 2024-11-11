@@ -18,6 +18,17 @@ export const login = async (req: express.Request, res: express.Response) => {
             return res.status(400).json({ message: "User not found" });
         }
 
+        const password = "easycafe";  // Plain text password
+        const hashedPassword = "$2b$10$7u3oRcn328hyrVabSkqnseOQxkZERb7tqWDvX9cwx.zPrrAjV7HZe";  // Example hash
+        
+        bcrypt.compare(password, hashedPassword, function(err, result) {
+            if (err) {
+                console.error(err);
+            } else {
+                console.log(result);  // Should print true if the passwords match
+            }
+        });
+
         // Extract password and salt from the user object
         const typedUser = user as IUser;
 
