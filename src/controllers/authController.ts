@@ -1,9 +1,8 @@
 import express from 'express';
 import { authentication, random } from '../helper'; // Assuming these are helper functions
 import { User } from '../models/User'; // Import the functions
-import { IUser } from '../models/User'; // Import the functions
+import { IUser } from '../models/User'; // Import the IUser interface
 import bcrypt from 'bcrypt';
-
 
 export const login = async (req: express.Request, res: express.Response) => {
     try {
@@ -43,7 +42,6 @@ export const login = async (req: express.Request, res: express.Response) => {
 
         return res.status(200).json(typedUser).end();
 
-
     } catch (error) {
         console.log(error);
         return res.sendStatus(400);
@@ -65,9 +63,9 @@ export const register = async (req: express.Request, res: express.Response) => {
             return res.sendStatus(400);
         }
 
-        const salt = random();
+        // Use bcrypt to generate a salt with the desired number of rounds (e.g., 10 rounds)
+        const salt = await bcrypt.genSalt(10);  // 10 rounds is the recommended default
         const hashedPassword = await bcrypt.hash(password, salt);
-
 
         console.log("test2");
 
@@ -94,4 +92,3 @@ export const register = async (req: express.Request, res: express.Response) => {
         return res.sendStatus(400);
     }
 };
-
