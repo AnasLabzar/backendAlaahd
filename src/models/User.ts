@@ -1,7 +1,8 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-interface IUser extends Document {
-
+// Define the IUser interface
+export interface IUser extends Document {
+    _id: mongoose.Types.ObjectId; // Explicitly define _id as mongoose Types.ObjectId
     username: string;
     email: string;
     authentication: {
@@ -15,6 +16,7 @@ interface IUser extends Document {
     fetchedAt: Date;
 }
 
+// Define the User Schema
 const UserSchema: Schema = new Schema({
     username: { type: String, required: true },
     email: { type: String, required: true },
@@ -26,8 +28,8 @@ const UserSchema: Schema = new Schema({
     role: { type: String },
     score: { type: String },
     phone: { type: String, required: true },
-    fetchedAt: { type: Date, default: Date.now, required: true } // Add a 'fetchedAt' field of type Date
+    fetchedAt: { type: Date, default: Date.now, required: true }
 });
 
-// Create and export the Invoice model
+// Export both the model and the interface
 export const User = mongoose.model<IUser>('User', UserSchema);
