@@ -34,6 +34,10 @@ export const login = async (req: express.Request, res: express.Response) => {
             return res.sendStatus(400);
         }
 
+        // Log the password from the database and the one from the request
+        console.log("Stored password: ", typedUser.authentication.password);
+        console.log("Request password: ", password);
+
         // Compare the provided password with the stored hashed password
         const isMatch = await bcrypt.compare(password, typedUser.authentication.password);
 
@@ -70,6 +74,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         return res.sendStatus(400);
     }
 };
+
 
 export const register = async (req: express.Request, res: express.Response) => {
     try {
