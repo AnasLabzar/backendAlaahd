@@ -21,6 +21,10 @@ export const login = async (req: express.Request, res: express.Response) => {
         // Extract password and salt from the user object
         const typedUser = user as IUser;
 
+        // Log the input password and stored password
+        console.log("Input password:", password);
+        console.log("Stored hashed password:", typedUser.authentication.password);
+
         // Compare the provided password with the stored hashed password
         const isMatch = await bcrypt.compare(password, typedUser.authentication.password);
 
