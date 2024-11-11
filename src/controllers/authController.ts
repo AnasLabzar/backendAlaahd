@@ -72,25 +72,27 @@ export const register = async (req: express.Request, res: express.Response) => {
         }
 
         const salt = await bcrypt.genSalt(10); // Generate salt
-const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
+        const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
 
-// Create a new user object
-const user = new User({
-    username,
-    email,
-    authentication: {
-        password: hashedPassword,  // Store the hashed password here
-        salt,  // Store the salt here
-        sessionToken,  // Initially, sessionToken can be an empty string
-    },
-    role,
-    phone,
-    fetchedAt: new Date(),
-});
+        // Generate a session token here (you can use your own method to generate the token)
+        const sessionToken = authentication(random(), username);  // Replace with the actual logic
 
-// Save the new user to the database
-await user.save();
+        // Create a new user object
+        const user = new User({
+            username,
+            email,
+            authentication: {
+                password: hashedPassword,  // Store the hashed password here
+                salt,  // Store the salt here
+                sessionToken,  // Store the generated sessionToken here
+            },
+            role,
+            phone,
+            fetchedAt: new Date(),
+        });
 
+        // Save the new user to the database
+        await user.save();
 
         return res.status(200).json(user);  // Return the created user
     } catch (error) {
