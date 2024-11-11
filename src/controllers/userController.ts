@@ -36,6 +36,23 @@ export const getUsersBySessionToken = async (sessionToken: string) => {
 }
 
 
+// Function to get all users with the role "custom"
+export const getUsersByRole = async (req: Request, res: Response) => {
+  try {
+    const users = await User.find({ role: "custom" }); // Query users with role "custom"
+    
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'No users found with role "custom"' });
+    }
+
+    return res.status(200).json(users); // Return the list of users with the role "custom"
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: (err as Error).message });
+  }
+};
+
+
 
 // export const deleteUser = async (req: Request, res: Response) => {
 //     try {
