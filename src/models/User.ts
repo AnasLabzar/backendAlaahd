@@ -16,20 +16,19 @@ export interface IUser extends Document {
     fetchedAt: Date;
 }
 
-// Define the User Schema
-const UserSchema: Schema = new Schema({
+const userSchema = new mongoose.Schema({
     username: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     authentication: {
-        password: { type: String, required: true, select: false },
-        salt: { type: String, select: false },
-        sessionToken: { type: String, select: false }
+        password: { type: String, required: true },  // Ensure password is required
+        salt: { type: String, required: true },
+        sessionToken: { type: String },
     },
-    role: { type: String },
-    score: { type: String },
+    role: { type: String, required: true },
     phone: { type: String, required: true },
-    fetchedAt: { type: Date, default: Date.now, required: true }
+    fetchedAt: { type: Date, default: Date.now },
 });
+
 
 // Export both the model and the interface
 export const User = mongoose.model<IUser>('User', UserSchema);
