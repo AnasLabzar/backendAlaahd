@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Document } from 'mongoose';
 
-interface UserDocument extends mongoose.Document {
+interface IUser extends Document {
+
     username: string;
     email: string;
     authentication: {
@@ -14,7 +15,7 @@ interface UserDocument extends mongoose.Document {
     fetchedAt: Date;
 }
 
-const UserModelSchema = new mongoose.Schema<UserDocument>({
+const UserSchema: Schema = new Schema({
     username: { type: String, required: true },
     email: { type: String, required: true },
     authentication: {
@@ -28,37 +29,5 @@ const UserModelSchema = new mongoose.Schema<UserDocument>({
     fetchedAt: { type: Date, default: Date.now, required: true } // Add a 'fetchedAt' field of type Date
 });
 
-export class UserModel extends mongoose.Model<UserDocument> {
-    static async getUsers() {
-        return await this.find();
-    }
-
-    static async getUserByEmail(email: string) {
-        return await this.findOne({ email });
-    }
-
-    static async getUserBySessionToken(sessionToken: string) {
-        return await this.findOne({
-            'authentication.sessionToken': sessionToken,
-        });
-    }
-
-    static async getUserById(id: String) {
-        return await this.findById(id);
-    }
-
-    static async createUser(values: UserDocument): Promise<UserDocument> {
-        const user = new this(values);
-        return (await user.save()).toObject();
-    }
-
-    static async deleteUserById(id: string) {
-        return await this.findOneAndDelete({ _id: id });
-    }
-
-    static async updateUserById(id: string, values: Record<string, any>) {
-        return await this.findByIdAndUpdate(id, values);
-    }
-}
-
-export default UserModel;
+// Create and export the Invoice model
+export const User = mongoose.model<IUser>('User', UserSchema);
