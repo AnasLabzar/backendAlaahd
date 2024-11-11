@@ -53,19 +53,23 @@ export const login = async (req: express.Request, res: express.Response) => {
 export const register = async (req: express.Request, res: express.Response) => {
     try {
         const { email, password, username, role, phone } = req.body;
+        console.log(req.body);
 
         if (!email || !password || !username || !role) {
             return res.sendStatus(400);
         }
 
         const existingUser = await User.findOne({ email });
-
+        console.log("test1");
         if (existingUser) {
             return res.sendStatus(400);
         }
 
         const salt = random();
         const hashedPassword = await bcrypt.hash(password, salt);
+
+
+        console.log("test2");
 
         // Create a new user instance
         const user = new User({
