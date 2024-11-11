@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { UserModel } from '../models/User';
 
-export const getAllUsers = async (_req: Request, res: Response) => {
+export const getAllUsers = async (req: Request, res: Response) => {
     try {
         const users = await UserModel.find();
         return res.status(200).json(users);
@@ -12,7 +12,7 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 }
 
 // Function to get user by ID
-export const getUsersById = async (_req: Request, res: Response) => {
+export const getUsersById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params; // Extract id from request parameters
         const user = await UserModel.getUserById(id);
@@ -36,7 +36,7 @@ export const getUsersBySessionToken = async (sessionToken: string) => {
 
 
 
-export const deleteUser = async (_req: Request, res: Response) => {
+export const deleteUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const deletedUser = await UserModel.deleteUserById(id);
@@ -47,7 +47,7 @@ export const deleteUser = async (_req: Request, res: Response) => {
     }
 }
 
-export const updateUser = async (_req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: Response) => {
     try {
         const { id } =  req.params;
         const { username } = req.body;
