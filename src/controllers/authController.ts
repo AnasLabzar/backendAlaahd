@@ -45,12 +45,13 @@ export const login = async (req: express.Request, res: express.Response) => {
         await typedUser.save();
 
         // Send the session token as a cookie in the response
-        res.cookie('ANAS-AUTH', typedUser.authentication.sessionToken, {
-            domain: 'backendalaahd.onrender.com',  // Adjust for your production domain
-            path: '/',
-            httpOnly: true,  // Security option
-            secure: true,    // Ensure secure cookies in production
+        res.cookie('ANAS-AUTH', sessionToken, {
+          httpOnly: true,   // Ensures the cookie can't be accessed from JavaScript
+          secure: process.env.NODE_ENV === 'production',  // Set to true for HTTPS in production
+          sameSite: 'Strict',  // This can also be 'Lax' or 'None', depending on your needs
+          maxAge: 60 * 60 * 1000,  // Set expiry to 1 hour (or change as needed)
         });
+
 
         return res.status(200).json(typedUser);  // Return user object
     } catch (error) {
