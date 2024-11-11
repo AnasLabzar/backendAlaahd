@@ -23,15 +23,17 @@ export const getUsersById = async (req: Request, res: Response) => {
     }
 }
 
-// // Function to get user by session token
-// export const getUsersBySessionToken = async (sessionToken: string) => {
-//     try {
-//         const user = await UserModel.getUserBySessionToken(sessionToken); // Corrected the function call here
-//         return user;
-//     } catch (error) {
-//         throw new Error('User not found');
-//     }
-// }
+// Function to get user by session token
+export const getUsersBySessionToken = async (sessionToken: string) => {
+    try {
+        const user = await User.findOne({
+            'authentication.sessionToken': sessionToken,
+        });
+        return user;
+    } catch (error) {
+        throw new Error('User not found');
+    }
+}
 
 
 
