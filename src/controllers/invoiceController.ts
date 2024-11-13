@@ -80,31 +80,15 @@ export const updateInvoice = async (req: Request, res: Response) => {
 };
 
 
+// Delete an Invoice
 export const deleteInvoice = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-
-    // Find the invoice by ID
-    const invoice = await Invoice.findById(id);
+    const invoice = await Invoice.findByIdAndDelete(req.params.id);
     if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found' });
+      return res.status(404).json({ message: 'Invoice not found' });
     }
-
-    // Delete associated orders using the orderId(s) in the invoice data
-    const orderIds = invoice.orderId; // Assuming `orderIds` is an array in the invoice model that holds the associated order IDs
-
-    if (orderIds && orderIds.length > 0) {
-      // Loop through the orderIds and delete each order
-      await Promise.all(orderIds.map(async (orderId) => {
-        await Order.findByIdAndDelete(orderId); // Deleting each order
-      }));
-    }
-
-    // After deleting the orders, now delete the invoice itself
-    await Invoice.findByIdAndDelete(id);
-
-    res.json({ message: 'Invoice and associated orders deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    res.json({ message: 'Invoice deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
   }
 };
