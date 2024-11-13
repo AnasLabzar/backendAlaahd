@@ -8,7 +8,6 @@ export const createOrder = async (req: Request, res: Response) => {
     const savedOrder = await order.save();
     res.status(201).json(savedOrder);
   } catch (err) {
-    // Assert err as Error type to access message property
     const errorMessage = (err as Error).message;
     res.status(400).json({ error: errorMessage });
   }
@@ -33,6 +32,34 @@ export const getAllOrders = async (_req: Request, res: Response) => {
   try {
     const orders = await Order.find();
     res.json(orders);
+  } catch (err) {
+    const errorMessage = (err as Error).message;
+    res.status(500).json({ error: errorMessage });
+  }
+};
+
+// Update an order by ID
+export const updateOrder = async (req: Request, res: Response) => {
+  try {
+    const updatedOrder = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    res.json(updatedOrder);
+  } catch (err) {
+    const errorMessage = (err as Error).message;
+    res.status(500).json({ error: errorMessage });
+  }
+};
+
+// Delete an order by ID
+export const deleteOrder = async (req: Request, res: Response) => {
+  try {
+    const deletedOrder = await Order.findByIdAndDelete(req.params.id);
+    if (!deletedOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    res.json({ message: 'Order deleted successfully' });
   } catch (err) {
     const errorMessage = (err as Error).message;
     res.status(500).json({ error: errorMessage });
