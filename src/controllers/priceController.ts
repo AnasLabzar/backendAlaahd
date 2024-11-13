@@ -34,3 +34,29 @@ export const getAllPrices = async (_req: Request, res: Response) => {
     res.status(500).json({ error: (err as Error).message });
   }
 };
+
+// Update a price by ID
+export const updatePrice = async (req: Request, res: Response) => {
+  try {
+    const updatedPrice = await Price.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedPrice) {
+      return res.status(404).json({ message: 'Price not found' });
+    }
+    res.json(updatedPrice);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
+
+// Delete a price by ID
+export const deletePrice = async (req: Request, res: Response) => {
+  try {
+    const deletedPrice = await Price.findByIdAndDelete(req.params.id);
+    if (!deletedPrice) {
+      return res.status(404).json({ message: 'Price not found' });
+    }
+    res.json({ message: 'Price deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
