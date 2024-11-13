@@ -22,7 +22,7 @@ export const getAllInvoices = async (_req: Request, res: Response) => {
   }
 };
 
-// Get an order by ID
+// Get an Invoice by ID
 export const getInvoiceById = async (req: Request, res: Response) => {
   try {
     const invoice = await Invoice.findById(req.params.id);
@@ -31,42 +31,63 @@ export const getInvoiceById = async (req: Request, res: Response) => {
     }
     res.json(invoice);
   } catch (err) {
-    const errorMessage = (err as Error).message;
-    res.status(500).json({ error: errorMessage });
+    res.status(500).json({ error: (err as Error).message });
   }
 };
-
 
 // Get filtered and counted invoices (week/month/year)
 export const getFilteredInvoices = async (req: Request, res: Response) => {
   const { filter } = req.query;
-
   const currentDate = new Date();
   let startDate: Date | undefined;
 
-  // Determine start date based on filter type
   if (filter === 'weekly') {
     startDate = new Date(currentDate);
-    startDate.setDate(currentDate.getDate() - currentDate.getDay()); // Start of the week (Sunday)
-    startDate.setHours(0, 0, 0, 0); // Set to the start of the day
+    startDate.setDate(currentDate.getDate() - currentDate.getDay());
+    startDate.setHours(0, 0, 0, 0);
   } else if (filter === 'monthly') {
-    startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); // Start of the month
+    startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
   } else if (filter === 'yearly') {
-    startDate = new Date(currentDate.getFullYear(), 0, 1); // Start of the year
+    startDate = new Date(currentDate.getFullYear(), 0, 1);
   } else {
     return res.status(400).json({ error: 'Invalid filter type' });
   }
 
   try {
-    // Fetch the count of invoices after the startDate
     const invoiceCount = await Invoice.countDocuments({
       fetchedAt: { $gte: startDate }
     });
-
     res.json({ count: invoiceCount });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
 };
 
+// Update an Invoice
+export const updateInvoice = async (req: Request, res: Response) => {
+  try {
+    const invoice = await Invoice.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    if (!invoice) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+    res.json(invoice);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
 
+// Delete an Invoice
+export const deleteInvoice = async (req: Request, res: Response) => {
+  try {
+    const invoice = await Invoice.findByIdAndDelete(req.params.id);
+    if (!invoice) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+    res.json({ message: 'Invoice deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
