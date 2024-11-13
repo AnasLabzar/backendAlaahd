@@ -79,19 +79,6 @@ export const updateInvoice = async (req: Request, res: Response) => {
   }
 };
 
-// Delete an Invoice
-export const deleteInvoice = async (req: Request, res: Response) => {
-  try {
-    const invoice = await Invoice.findByIdAndDelete(req.params.id);
-    if (!invoice) {
-      return res.status(404).json({ message: 'Invoice not found' });
-    }
-    res.json({ message: 'Invoice deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
-  }
-};
-
 
 export const deleteInvoice = async (req: Request, res: Response) => {
   try {
