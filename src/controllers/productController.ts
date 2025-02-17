@@ -65,7 +65,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
     // Delete related colors, prices, and SKUs
     await Color.deleteMany({ _id: { $in: product.colorsId } });
     await Price.deleteMany({ _id: { $in: product.priceId } });
-    await SKU.deleteMany({ _id: { $in: product.skuId } }));
+    await SKU.deleteMany({ _id: { $in: product.skuId } });
 
     // Delete the product itself
     await Product.findByIdAndDelete(productId);
