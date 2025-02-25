@@ -16,12 +16,15 @@ export const createOrder = async (req: Request, res: Response) => {
     const savedOrder = await order.save();
     res.status(201).json(savedOrder);
   } catch (err) {
-    if (err.code === 11000) {
-      // MongoDB duplicate key error
-      return res.status(400).json({ error: 'Duplicate key error: refOrder must be unique' });
+    if (err instanceof Error) {
+      if ('code' in err && err.code === 11000) {
+        // MongoDB duplicate key error
+        return res.status(400).json({ error: 'Duplicate key error: refOrder must be unique' });
+      }
+      res.status(400).json({ error: err.message });
+    } else {
+      res.status(400).json({ error: 'An unknown error occurred' });
     }
-    const errorMessage = (err as Error).message;
-    res.status(400).json({ error: errorMessage });
   }
 };
 
@@ -34,8 +37,11 @@ export const getOrderById = async (req: Request, res: Response) => {
     }
     res.json(order);
   } catch (err) {
-    const errorMessage = (err as Error).message;
-    res.status(500).json({ error: errorMessage });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: 'An unknown error occurred' });
+    }
   }
 };
 
@@ -45,8 +51,11 @@ export const getAllOrders = async (_req: Request, res: Response) => {
     const orders = await Order.find();
     res.json(orders);
   } catch (err) {
-    const errorMessage = (err as Error).message;
-    res.status(500).json({ error: errorMessage });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: 'An unknown error occurred' });
+    }
   }
 };
 
@@ -67,12 +76,15 @@ export const updateOrder = async (req: Request, res: Response) => {
     }
     res.json(updatedOrder);
   } catch (err) {
-    if (err.code === 11000) {
-      // MongoDB duplicate key error
-      return res.status(400).json({ error: 'Duplicate key error: refOrder must be unique' });
+    if (err instanceof Error) {
+      if ('code' in err && err.code === 11000) {
+        // MongoDB duplicate key error
+        return res.status(400).json({ error: 'Duplicate key error: refOrder must be unique' });
+      }
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: 'An unknown error occurred' });
     }
-    const errorMessage = (err as Error).message;
-    res.status(500).json({ error: errorMessage });
   }
 };
 
@@ -85,7 +97,10 @@ export const deleteOrder = async (req: Request, res: Response) => {
     }
     res.json({ message: 'Order deleted successfully' });
   } catch (err) {
-    const errorMessage = (err as Error).message;
-    res.status(500).json({ error: errorMessage });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: 'An unknown error occurred' });
+    }
   }
 };
