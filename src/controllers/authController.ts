@@ -1,113 +1,175 @@
 import express from 'express';
-import { authentication, random } from '../helper'; // Assuming these are helper functions
-import { User } from '../models/User'; // Import the User model
-import { IUser } from '../models/User'; // Import the IUser interface
 import bcrypt from 'bcrypt';
+import { random, authentication } from '../helper';
+import { User, IUser } from '../models/User';
+import { Log } from '../models/Log';
+import { Notification } from '../models/Notification';
+import { sendEmail } from '../helper/email';
+import mongoose from 'mongoose';
 
 export const login = async (req: express.Request, res: express.Response) => {
-    try {
-        const { email, password } = req.body;
+  const { email, password } = req.body;
 
-        // Ensure that email and password are provided
-        if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required" });
-        }
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
 
-        // Find the user by email
-        const user = await User.findOne({ email });
-
-        if (!user) {
-            return res.status(400).json({ message: "User not found" });
-        }
-
-        // Ensure the user data is correct
-        console.log("User object:", user);
-
-        const typedUser = user as IUser;
-
-        // Log the password hash field to ensure it's correctly populated
-        console.log("Stored password hash:", typedUser.authentication?.password);
-
-        if (!typedUser.authentication?.password) {
-            return res.status(400).json({ message: "Password hash not found" });
-        }
-
-        // Compare the provided password with the stored hashed password
-        const isMatch = await bcrypt.compare(password, typedUser.authentication?.password);
-
-        if (!isMatch) {
-            return res.status(403).json({ message: "Invalid credentials" });
-        }
-
-        // If passwords match, generate and store the session token
-        const salt = random();  // Create a new salt for session token
-        const sessionToken = authentication(salt, typedUser._id.toString());  // Generate session token
-
-        // Update user with the new session token
-        typedUser.authentication.sessionToken = sessionToken;
-
-        // Save the updated user with the session token
-        await typedUser.save();
-
-        // Send the session token as a cookie in the response
-        res.cookie('ANAS-AUTH', sessionToken, {
-          httpOnly: true,   // Ensures the cookie can't be accessed from JavaScript
-          secure: process.env.NODE_ENV === 'production',  // Set to true for HTTPS in production
-          sameSite: 'strict',  // Use 'strict' for tight security or 'lax' depending on needs
-          maxAge: 60 * 60 * 1000,  // Set expiry to 1 hour
-        });
-
-        return res.status(200).json(typedUser);  // Return the updated user object
-    } catch (error) {
-        console.log("Error during login:", error);
-        return res.status(500).json({ message: "Internal server error" });
+  try {
+    const user = await User.findOne({ email }).select('+authentication.password +authentication.salt');
+    if (!user || !user.authentication?.password) {
+      return res.status(400).json({ message: "Invalid email or password" });
     }
+
+    const isMatch = await bcrypt.compare(password, user.authentication.password);
+    if (!isMatch) {
+      return res.status(403).json({ message: "Invalid email or password" });
+    }
+
+    const sessionToken = authentication(random(), user._id.toString());
+    user.authentication.sessionToken = sessionToken;
+    await user.save();
+
+    // Log the login action
+    await Log.create({
+      action: "LOGIN",
+      performedBy: user._id,
+      details: { email },
+    });
+
+    // Notify the user of successful login
+    await Notification.create({
+      userId: user._id,
+      title: "Login Successful",
+      message: `Welcome back, ${user.username}! You successfully logged in.`,
+      type: "success",
+    });
+
+    res.cookie('ANAS-AUTH', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000, // 1 hour
+    });
+
+    return res.status(200).json({ message: "Login successful", user });
+  } catch (error) {
+    console.error("Error during login:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const register = async (req: express.Request, res: express.Response) => {
-    try {
-        const { email, password, username, role, phone } = req.body;
-        console.log(req.body);
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-        // Ensure all required fields are provided
-        if (!email || !password || !username || !role || !phone) {
-            return res.sendStatus(400);  // Bad request if any required fields are missing
-        }
+  try {
+    const { username, email, role, SalesZone, score, phone } = req.body;
 
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-
-        if (existingUser) {
-            return res.sendStatus(400);  // User already exists
-        }
-
-        // Hash the password
-        const salt = await bcrypt.genSalt(10); // Generate salt
-        const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
-
-        // Generate a session token (you can use your own method to generate the token)
-        const sessionToken = authentication(random(), username);  // Replace with the actual logic
-
-        // Create a new user object
-        const user = new User({
-            username,
-            email,
-            authentication: {
-                password: hashedPassword,  // Store the hashed password here
-                salt,  // Store the salt here
-                sessionToken,  // Store the generated sessionToken here
-            },
-            role,
-            phone,
-            fetchedAt: new Date(),
-        });
-
-        // Save the new user to the database
-        await user.save();
-
-        return res.status(200).json(user);  // Return the created user
-    } catch (error) {
-        console.log(error);
-        return res.sendStatus(400);  // Handle errors
+    // Validation
+    if (!username || !email || !role || !score || !phone) {
+      await session.abortTransaction();
+      return res.status(400).json({ message: "All fields are required" });
     }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      await session.abortTransaction();
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    const existingUser = await User.findOne({ email }).session(session);
+    if (existingUser) {
+      await session.abortTransaction();
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // Generate credentials
+    const generatedPassword = Math.random().toString(36).slice(-8);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(generatedPassword, salt);
+    const sessionToken = authentication(random(), username);
+
+    const user: IUser = new User({
+      username,
+      email,
+      authentication: {
+        password: hashedPassword,
+        salt,
+        sessionToken,
+      },
+      role,
+      score,
+      SalesZone: SalesZone || null,
+      phone,
+      fetchedAt: new Date(),
+    });
+
+    await user.save({ session });
+
+    try {
+      // Send credentials email
+      const emailBody = `
+        Welcome to ComeInUp!
+        
+        Your account has been created:
+        Email: ${email}
+        Password: ${generatedPassword}
+        
+        Please login at: http://comeinup.com/
+        Change your password after first login.
+        
+        This is an automated message - please do not reply
+      `;
+      await sendEmail({
+        to: email,
+        subject: 'Your ComeInUp Account Credentials',
+        body: emailBody,
+      });
+    } catch (emailError) {
+      await session.abortTransaction();
+      console.error("Email failed to send:", emailError);
+      return res.status(500).json({
+        message: "User created but email failed to send",
+        manualActionRequired: true,
+        email: email,
+        generatedPassword: generatedPassword,
+      });
+    }
+
+    await session.commitTransaction();
+
+    // Log the registration action
+    await Log.create({
+      action: "REGISTER",
+      performedBy: user._id,
+      details: { email, username, role },
+    });
+
+    // Notify the admin of a new user registration
+    const admins = await User.find({ role: "SuperAdmin" });
+    for (const admin of admins) {
+      await Notification.create({
+        userId: admin._id,
+        title: "New User Registered",
+        message: `${username} has registered with the role ${role}.`,
+        type: "info",
+      });
+    }
+
+    const userResponse = {
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      score: user.score,
+      phone: user.phone,
+    };
+
+    return res.status(201).json(userResponse);
+  } catch (error) {
+    await session.abortTransaction();
+    console.error("Error during registration:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  } finally {
+    session.endSession();
+  }
 };
